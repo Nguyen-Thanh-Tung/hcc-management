@@ -15,4 +15,15 @@ Route::group([
     'namespace'  => 'App\Http\Controllers\Admin',
 ], function () { // custom admin routes
 
+    Route::crud('user', 'UserCrudController');
+    Route::crud('client-conf-info', 'ClientConfInfoCrudController');
+    Route::crud('count-request', 'CountRequestCrudController');
+    Route::crud('image-metadata', 'ImageMetadataCrudController');
+    Route::crud('face-liveness-log', 'FaceLivenessLogCrudController');
+    Route::crud('face-matching-log', 'FaceMatchingLogCrudController');
+    Route::crud('id-spoof-log', 'IdSpoofLogCrudController');
+    Route::crud('id-type-log', 'IdTypeLogCrudController');
+    Route::crud('id-card-log', 'IdCardLogCrudController');
+    Route::crud('image-quality-log', 'ImageQualityLogCrudController');
+    Route::crud('role', 'RoleCrudController');
 }); // this should be the absolute last line of this file

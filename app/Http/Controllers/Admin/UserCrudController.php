@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Requests\UserRequest;
+use App\Models\Role;
+use App\Models\User;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
-use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * Class UserCrudController
@@ -18,6 +20,42 @@ class UserCrudController extends CrudController
     use \Backpack\CRUD\app\Http\Controllers\Operations\UpdateOperation;
     use \Backpack\CRUD\app\Http\Controllers\Operations\DeleteOperation;
     use \Backpack\CRUD\app\Http\Controllers\Operations\ShowOperation;
+    use \Backpack\CRUD\app\Http\Controllers\Operations\BulkDeleteOperation;
+
+    private function getFieldsData($show = FALSE) {
+        return [
+            [
+                'name'=> 'username',
+                'label' => 'Username',
+                'type'=> 'text'
+            ],
+            [
+                'name'=>'password',
+                'label'=>'Password',
+                'type'=>'password'
+            ],
+            [
+                'name' => 'enabled',
+                'label' => 'Enabled',
+                'type' => 'boolean',
+            ],
+            [    // Select2Multiple = n-n relationship (with pivot table)
+                'label'     => "Roles",
+                'type'      => ($show ? "select": 'relationship'),
+                'name'      => 'roles', // the method that defines the relationship in your Model
+// optional
+                'entity'    => 'roles', // the method that defines the relationship in your Model
+                'model'     => "App\Models\Role", // foreign key model
+                'attribute' => 'name', // foreign key attribute that is shown to user
+                'pivot'     => true, // on create&update, do you need to add/delete pivot table entries?
+            ],
+            [
+                'name' => 'rate_limit_config',
+                'label' => 'Rate limit config',
+                'type' => 'text',
+            ],
+        ];
+    }
 
     /**
      * Configure the CrudPanel object. Apply settings to all operations.
@@ -26,9 +64,10 @@ class UserCrudController extends CrudController
      */
     public function setup()
     {
-        CRUD::setModel(\App\Models\User::class);
-        CRUD::setRoute(config('backpack.base.route_prefix') . '/user');
-        CRUD::setEntityNameStrings('user', 'users');
+        $this->crud->setModel(\App\Models\User::class);
+        $this->crud->setRoute(config('backpack.base.route_prefix') . '/user');
+        $this->crud->setEntityNameStrings('user', 'users');
+        $this->crud->addFields($this->getFieldsData());
     }
 
     /**
@@ -39,14 +78,22 @@ class UserCrudController extends CrudController
      */
     protected function setupListOperation()
     {
-        CRUD::column('name');
-        CRUD::column('password');
-
-        /**
-         * Columns can be defined using the fluent syntax or array syntax:
-         * - CRUD::column('price')->type('number');
-         * - CRUD::addColumn(['name' => 'price', 'type' => 'number']);
-         */
+        $this->crud->addColumns($this->getFieldsData(TRUE));
+        $this->crud->removeColumn('password');
+        // select2_multiple filter
+        $this->crud->addFilter([
+            'name'  => 'roles',
+            'type'  => 'select2_multiple',
+            'label' => 'Roles'
+        ], function() { // the options that show up in the select2
+            return Role::all()->pluck('name', 'id')->toArray();
+        }, function($values) { // if the filter is active
+            foreach (json_decode($values) as $key => $value) {
+                $this->crud->query = $this->crud->query->whereHas('roles', function ($query) use ($value) {
+                    $query->where('role_id', $value);
+                });
+            }
+        });
     }
 
     /**
@@ -57,16 +104,8 @@ class UserCrudController extends CrudController
      */
     protected function setupCreateOperation()
     {
-        CRUD::setValidation(UserRequest::class);
-
-        CRUD::field('name');
-        CRUD::field('password');
-
-        /**
-         * Fields can be defined using the fluent syntax or array syntax:
-         * - CRUD::field('price')->type('number');
-         * - CRUD::addField(['name' => 'price', 'type' => 'number']));
-         */
+        $this->crud->setValidation(UserRequest::class);
+        $this->crud->setFromDb();
     }
 
     /**
