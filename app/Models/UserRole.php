@@ -18,7 +18,7 @@ class UserRole extends Model
 
     protected $table = 'users_roles';
     // protected $primaryKey = 'id';
-    // public $timestamps = false;
+    public $timestamps = false;
 //    protected $guarded = ['id'];
     // protected $fillable = [];
     // protected $hidden = [];

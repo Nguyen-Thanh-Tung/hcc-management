@@ -17,7 +17,7 @@ class ImageMetadata extends Model
 
     protected $table = 'image_metadata';
     // protected $primaryKey = 'id';
-    // public $timestamps = false;
+    public $timestamps = false;
     protected $guarded = ['id'];
     // protected $fillable = [];
     // protected $hidden = [];

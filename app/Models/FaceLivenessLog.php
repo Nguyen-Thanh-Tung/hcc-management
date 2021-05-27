@@ -17,7 +17,7 @@ class FaceLivenessLog extends Model
 
     protected $table = 'kyc_ocr_face_liveness_log';
     // protected $primaryKey = 'id';
-     public $timestamps = false;
+    public $timestamps = false;
     protected $guarded = ['id'];
     // protected $fillable = [];
     // protected $hidden = [];

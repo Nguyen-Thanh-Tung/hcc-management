@@ -17,7 +17,7 @@ class ImageQualityLog extends Model
 
     protected $table = 'kyc_ocr_image_quality_log';
     // protected $primaryKey = 'id';
-    // public $timestamps = false;
+    public $timestamps = false;
     protected $guarded = ['id'];
     // protected $fillable = [];
     // protected $hidden = [];
