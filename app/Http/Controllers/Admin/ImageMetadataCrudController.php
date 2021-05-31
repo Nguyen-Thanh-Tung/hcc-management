@@ -87,12 +87,12 @@ class ImageMetadataCrudController extends CrudController
             'type'  => 'text',
             'label' => 'Label'
         ], false);
-//        $this->crud->addColumn([
-//            'name'=>'save_path',
-//            'label'=>'Preview',
-//            'type'=>'image',
-//            'prefix'=>''
-//        ]);
+        $this->crud->addColumn([
+            'name'=>'save_path',
+            'label'=>'Preview',
+            'type'=>'image',
+            'prefix'=>'/images/kyc/img_save/',
+        ]);
     }
 
     /**
@@ -116,5 +116,32 @@ class ImageMetadataCrudController extends CrudController
     protected function setupUpdateOperation()
     {
         $this->setupCreateOperation();
+    }
+
+    protected function setupShowOperation() {
+        $this->crud->addColumns($this->getFieldsData()); // columns
+        $this->crud->denyAccess(['create', 'update']);
+        $this->crud->addFilter([
+            'name'  => 'owner',
+            'type'  => 'select2',
+            'label' => 'Owner'
+        ], function() {
+            return ClientConfInfo::all()->pluck('client_code', 'client_code')->toArray();
+        }, function($value) {
+            $this->crud->addClause('where', 'owner', $value);
+        });
+        $this->crud->addFilter([
+            'name'  => 'label',
+            'type'  => 'text',
+            'label' => 'Label'
+        ], false);
+        $this->crud->addColumn([
+            'name'=>'save_path',
+            'label'=>'Preview',
+            'type'=>'image',
+            'prefix'=>'/images/kyc/img_save/',
+
+            'height'=>'100px',
+        ]);
     }
 }
